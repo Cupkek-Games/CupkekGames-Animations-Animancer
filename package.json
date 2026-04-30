@@ -1,0 +1,23 @@
+{
+  "name": "com.cupkekgames.animations.animancer",
+  "displayName": "CupkekGames Animations — Animancer Bridge",
+  "version": "0.1.0",
+  "author": {
+    "name": "CupkekGames",
+    "url": "https://www.docs.cupkek.games"
+  },
+  "unity": "6000.0",
+  "documentationUrl": "https://docs.cupkek.games/",
+  "description": "Adapter that implements CupkekGames.Animations interfaces (IAnimationEngine, ICombatAnimations, locomotion) on top of the Kybernetik Animancer asset. Plays state machine animations through Animancer with TimeSystem time-scaling.",
+  "keywords": [
+    "Animations",
+    "Animancer",
+    "Bridge",
+    "CupkekGames"
+  ],
+  "dependencies": {
+    "com.cupkekgames.animations": "0.1.0",
+    "com.cupkekgames.timesystem": "0.1.0",
+    "com.cupkekgames.addressableassets": "0.1.4"
+  }
+}
