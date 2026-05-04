@@ -7,8 +7,7 @@ Concrete backend for [CupkekGames.Animations](https://github.com/Cupkek-Games/Cu
 **Runtime** (`CupkekGames.Animations.Animancer.asmdef`)
 
 - `AnimancerAnimationEngine` — `IAnimationEngine` impl wrapping `AnimancerComponent`
-- `CombatAnimationsAnimancer` — `ICombatAnimations` impl with hit / death / win / get-hit playback
-- `LocomotionAnimancer` — locomotion (idle / walk / run) blend driver
+- `CharacterAnimationStateAnimancer` — `IAnimationStateController` impl. Holds a `List<AnimationKindEntry>` mapping kind strings (Idle / Walk / GetHit / Death / Win + game-defined kinds) to `ClipTransition`s, with optional per-entry `ReturnToKind` / `OnlyFromKind` rules.
 
 ## Dependencies
 
