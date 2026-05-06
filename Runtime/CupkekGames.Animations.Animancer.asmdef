@@ -27,7 +27,15 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
+    "defineConstraints": [
+        "ANIMANCER_INSTALLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "Kybernetik.Animancer",
+            "expression": "",
+            "define": "ANIMANCER_INSTALLED"
+        }
+    ],
     "noEngineReferences": false
 }
