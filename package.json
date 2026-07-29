@@ -1,7 +1,7 @@
 {
   "name": "com.cupkekgames.animations.animancer",
   "displayName": "CupkekGames Animations — Animancer Bridge",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": {
     "name": "CupkekGames",
     "url": "https://www.docs.cupkek.games"
@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "com.cupkekgames.animations": "0.2.0",
-    "com.cupkekgames.timesystem": "0.2.3",
+    "com.cupkekgames.timesystem": "0.2.5",
     "com.cupkekgames.addressableassets": "0.1.5"
   }
 }
