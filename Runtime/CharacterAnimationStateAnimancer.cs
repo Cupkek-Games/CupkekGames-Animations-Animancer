@@ -39,12 +39,26 @@ namespace CupkekGames.Animations.Animancer
 
         public event Action<AnimationClip> OnAnimationPlayed
         {
-            add => _engine.OnAnimationPlayed += value;
-            remove => _engine.OnAnimationPlayed -= value;
+            add { EnsureInitialized(); _engine.OnAnimationPlayed += value; }
+            remove { EnsureInitialized(); _engine.OnAnimationPlayed -= value; }
         }
 
         private void Awake()
         {
+            EnsureInitialized();
+        }
+
+        /// <summary>
+        /// Lazy init: during runtime Instantiate, Unity initializes parent
+        /// GameObjects before children, so a parent's OnEnable (e.g.
+        /// HumonoidCharacter wiring EyeMovement) can reach this component
+        /// before its own Awake has run. Every public entry point funnels
+        /// through here so pre-Awake access is safe.
+        /// </summary>
+        private void EnsureInitialized()
+        {
+            if (_map != null) return;
+
             _engine = GetComponent<AnimancerAnimationEngine>();
             _map = new Dictionary<string, AnimationKindEntry>();
             foreach (AnimationKindEntry entry in _entries)
@@ -65,6 +79,7 @@ namespace CupkekGames.Animations.Animancer
         public void Play(string kind)
         {
             if (string.IsNullOrEmpty(kind)) return;
+            EnsureInitialized();
             if (!_map.TryGetValue(kind, out AnimationKindEntry entry) || entry.Transition == null)
                 return;
 
@@ -83,6 +98,7 @@ namespace CupkekGames.Animations.Animancer
         {
             if (clip == null) return;
 
+            EnsureInitialized();
             AnimancerState state = _engine.Play(clip, fadeDuration, FadeMode.FromStart);
 
             ClipTransition idle = ResolveTransition(AnimationKinds.Idle);
