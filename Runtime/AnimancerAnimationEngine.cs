@@ -30,6 +30,16 @@ namespace CupkekGames.Animations.Animancer
 
         public virtual void Awake()
         {
+            EnsureInitialized();
+        }
+
+        // Lazy: runtime Instantiate runs parent components' OnEnable before child
+        // Awake, so callers can reach the engine pre-Awake (same contract as
+        // CharacterAnimationStateAnimancer.EnsureInitialized).
+        private void EnsureInitialized()
+        {
+            if (_layers != null) return;
+
             _animancerComponent = GetComponent<AnimancerComponent>();
 
             AnimatorControllerLayerDatabase animatorControllerLayerDatabase =
@@ -59,6 +69,7 @@ namespace CupkekGames.Animations.Animancer
         public AnimancerState Play(AnimationClip clip, float fadeDuration = 0.2f,
             FadeMode fadeMode = FadeMode.FixedSpeed, AnimatorControllerLayer layer = 0)
         {
+            EnsureInitialized();
             AnimancerState state = _layers[(int)layer].Play(clip, fadeDuration, fadeMode);
             OnAnimationPlayed?.Invoke(clip);
             return state;
@@ -73,6 +84,7 @@ namespace CupkekGames.Animations.Animancer
             if (fadeMode == null)
                 fadeMode = clipTransition.FadeMode;
 
+            EnsureInitialized();
             AnimancerState state = _layers[(int)layer].Play(clipTransition, fadeDuration.Value, fadeMode.Value);
             OnAnimationPlayed?.Invoke(clipTransition.Clip);
             return state;
@@ -80,6 +92,7 @@ namespace CupkekGames.Animations.Animancer
 
         public bool IsPlaying(ClipTransition clip)
         {
+            EnsureInitialized();
             return _animancerComponent.IsPlaying(clip);
         }
 
@@ -174,6 +187,7 @@ namespace CupkekGames.Animations.Animancer
 
         public void Pause()
         {
+            EnsureInitialized();
             foreach (var layer in _layers)
             {
                 layer.Playable.Pause();
@@ -182,6 +196,7 @@ namespace CupkekGames.Animations.Animancer
 
         public void Resume()
         {
+            EnsureInitialized();
             foreach (var layer in _layers)
             {
                 layer.Playable.Play();
@@ -190,6 +205,7 @@ namespace CupkekGames.Animations.Animancer
 
         public void SetPlaySpeed(float speed)
         {
+            EnsureInitialized();
             foreach (var layer in _layers)
             {
                 layer.Speed = speed;
