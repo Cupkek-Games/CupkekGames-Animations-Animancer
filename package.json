@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "com.cupkekgames.animations": "0.3.0",
-    "com.cupkekgames.timesystem": "0.4.2",
-    "com.cupkekgames.addressableassets": "0.2.0"
+    "com.cupkekgames.timesystem": "0.5.0",
+    "com.cupkekgames.addressableassets": "0.2.1"
   }
 }
