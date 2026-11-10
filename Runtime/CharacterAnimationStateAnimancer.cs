@@ -10,32 +10,37 @@ namespace CupkekGames.Animations.Animancer
 {
     /// <summary>
     /// Animancer-backed implementation of <see cref="IAnimationStateController"/>.
-    /// Kinds and their clips are authored in <see cref="_entries"/>; per-entry
-    /// <c>ReturnToKind</c> / <c>OnlyFromKind</c> drive Animancer state transitions.
+    /// A character starts from a shared <see cref="AnimationKindSet"/> (for
+    /// example her body type's) and adds her own entries in <see cref="_entries"/>,
+    /// which win on the same kind; per-entry <c>ReturnToKind</c> /
+    /// <c>OnlyFromKind</c> drive Animancer state transitions.
     /// </summary>
     [RequireComponent(typeof(AnimancerAnimationEngine))]
     public class CharacterAnimationStateAnimancer : MonoBehaviour, IAnimationStateController
     {
-        [Serializable]
-        public class AnimationKindEntry
-        {
-            public string Kind;
-            public ClipTransition Transition;
+        [Tooltip("The shared set this character starts from (for example her body type's). Her own entries below add to it and win on the same kind.")]
+        [SerializeField] private AnimationKindSet _set;
 
-            [Tooltip("Optional: kind name to return to after this clip ends.")]
-            public string ReturnToKind;
-
-            [Tooltip("Optional: only play if currently playing this kind (Animancer onlyFrom). Empty = play unconditionally.")]
-            public string OnlyFromKind;
-        }
-
-        [Header("Authored kinds (kind → clip transition + optional return-to / only-from rules)")]
+        [Header("Her own kinds (add to the set's; win on the same kind)")]
         [SerializeField] private List<AnimationKindEntry> _entries = new List<AnimationKindEntry>();
 
         private AnimancerAnimationEngine _engine;
         private Dictionary<string, AnimationKindEntry> _map;
 
         public Transform Transform => transform;
+
+        /// <summary>The shared set this character starts from; null when she lists everything herself.</summary>
+        public AnimationKindSet Set => _set;
+
+        /// <inheritdoc />
+        public IReadOnlyCollection<string> Kinds
+        {
+            get
+            {
+                EnsureInitialized();
+                return _map.Keys;
+            }
+        }
 
         public event Action<AnimationClip> OnAnimationPlayed
         {
@@ -61,6 +66,8 @@ namespace CupkekGames.Animations.Animancer
 
             _engine = GetComponent<AnimancerAnimationEngine>();
             _map = new Dictionary<string, AnimationKindEntry>();
+            // The set's kinds first; her own win on the same kind.
+            if (_set != null) _set.AddTo(_map);
             foreach (AnimationKindEntry entry in _entries)
             {
                 if (string.IsNullOrEmpty(entry.Kind) || entry.Transition == null)
@@ -92,6 +99,17 @@ namespace CupkekGames.Animations.Animancer
                 returnTo,
                 entry.Transition.FadeDuration,
                 entry.Transition.FadeMode);
+        }
+
+        /// <inheritdoc />
+        public bool TryGetClip(string kind, out AnimationClip clip)
+        {
+            clip = null;
+            if (string.IsNullOrEmpty(kind)) return false;
+            EnsureInitialized();
+            if (!_map.TryGetValue(kind, out AnimationKindEntry entry) || entry.Transition == null) return false;
+            clip = entry.Transition.Clip;
+            return clip != null;
         }
 
         public void PlayClipWithReturnToIdle(AnimationClip clip, float fadeDuration = 0.25f, CancellationToken? cancellationToken = null)
