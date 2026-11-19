@@ -93,6 +93,12 @@ namespace CupkekGames.Animations.Animancer
             ClipTransition onlyFrom = ResolveTransition(entry.OnlyFromKind);
             ClipTransition returnTo = ResolveTransition(entry.ReturnToKind);
 
+            // A looping kind already playing goes on: playing it again (a
+            // driver re-asserting Walk) never restarts it from its first frame.
+            if (onlyFrom == null && returnTo == null && entry.Transition.Clip != null && entry.Transition.Clip.isLooping
+                && _engine.IsCurrent(entry.Transition.Clip))
+                return;
+
             _engine.ChangeState(
                 entry.Transition,
                 onlyFrom,
@@ -112,12 +118,13 @@ namespace CupkekGames.Animations.Animancer
             return clip != null;
         }
 
-        public void PlayClipWithReturnToIdle(AnimationClip clip, float fadeDuration = 0.25f, CancellationToken? cancellationToken = null)
+        public void PlayClipWithReturnToIdle(AnimationClip clip, float fadeDuration = 0.25f, CancellationToken? cancellationToken = null, float speed = 1f)
         {
             if (clip == null) return;
 
             EnsureInitialized();
             AnimancerState state = _engine.Play(clip, fadeDuration, FadeMode.FromStart);
+            state.Speed = speed > 0f ? speed : 1f;
 
             ClipTransition idle = ResolveTransition(AnimationKinds.Idle);
             if (idle == null) return;

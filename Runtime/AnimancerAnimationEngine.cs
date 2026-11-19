@@ -96,6 +96,14 @@ namespace CupkekGames.Animations.Animancer
             return _animancerComponent.IsPlaying(clip);
         }
 
+        /// <summary>Whether <paramref name="clip"/> is the layer's current state and playing (not one fading out).</summary>
+        public bool IsCurrent(AnimationClip clip, AnimatorControllerLayer layer = 0)
+        {
+            EnsureInitialized();
+            AnimancerState current = _layers[(int)layer].CurrentState;
+            return current != null && current.Clip == clip && current.IsPlaying;
+        }
+
         public AnimancerState ChangeState(ClipTransition clip, ClipTransition onlyFrom, ClipTransition returnTo,
             float fadeDuration, FadeMode fadeMode, AnimatorControllerLayer layer = 0, bool fadeOut = false,
             CancellationToken? cancellationToken = null)
