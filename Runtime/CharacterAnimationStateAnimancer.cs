@@ -26,6 +26,9 @@ namespace CupkekGames.Animations.Animancer
 
         private AnimancerAnimationEngine _engine;
         private Dictionary<string, AnimationKindEntry> _map;
+        // The one-shot playing now (PlayClipWithReturnToIdle), and the kind asked to follow it (PlayAfterCurrent).
+        private AnimancerState _oneShot;
+        private string _afterCurrent;
 
         public Transform Transform => transform;
 
@@ -39,6 +42,25 @@ namespace CupkekGames.Animations.Animancer
             {
                 EnsureInitialized();
                 return _map.Keys;
+            }
+        }
+
+        /// <inheritdoc />
+        public bool IsPlayingOneShot => _oneShot != null && _oneShot.IsPlaying && _oneShot.NormalizedTime < 1f;
+
+        /// <summary>
+        /// Her feet stay on the floor (<see cref="FootGrounding"/>): on where she stands on it (a fight's field), off
+        /// where a pose hangs them on purpose (a bench).
+        /// </summary>
+        public bool Grounded
+        {
+            get { FootGrounding feet = GetComponent<FootGrounding>(); return feet != null && feet.enabled; }
+            set
+            {
+                FootGrounding feet = GetComponent<FootGrounding>();
+                if (feet == null && !value) return;
+                if (feet == null) feet = gameObject.AddComponent<FootGrounding>();
+                feet.enabled = value;
             }
         }
 
@@ -99,12 +121,23 @@ namespace CupkekGames.Animations.Animancer
                 && _engine.IsCurrent(entry.Transition.Clip))
                 return;
 
+            _oneShot = null;
+            _afterCurrent = null;
             _engine.ChangeState(
                 entry.Transition,
                 onlyFrom,
                 returnTo,
                 entry.Transition.FadeDuration,
                 entry.Transition.FadeMode);
+        }
+
+        /// <inheritdoc />
+        public void PlayAfterCurrent(string kind)
+        {
+            if (string.IsNullOrEmpty(kind)) return;
+            EnsureInitialized();
+            if (IsPlayingOneShot) _afterCurrent = kind;
+            else Play(kind);
         }
 
         /// <inheritdoc />
@@ -125,18 +158,35 @@ namespace CupkekGames.Animations.Animancer
             EnsureInitialized();
             AnimancerState state = _engine.Play(clip, fadeDuration, FadeMode.FromStart);
             state.Speed = speed > 0f ? speed : 1f;
+            _oneShot = state;
+            _afterCurrent = null;
 
             ClipTransition idle = ResolveTransition(AnimationKinds.Idle);
             if (idle == null) return;
 
+            // Cancelled (a stun): back to idle at once. Ended: the kind asked to follow it, else idle.
             CancellationTokenRegistration? registration = null;
             if (cancellationToken.HasValue)
             {
                 ClipTransition idleCapture = idle;
-                registration = cancellationToken.Value.Register(() => _engine.Play(idleCapture));
+                registration = cancellationToken.Value.Register(() =>
+                {
+                    if (_oneShot == state) { _oneShot = null; _afterCurrent = null; }
+                    _engine.Play(idleCapture);
+                });
             }
 
-            _engine.RegisterOnEndReturnTo(state, AnimatorControllerLayer.Base, idle, registration);
+            if (state.Events(_engine, out AnimancerEvent.Sequence events))
+            {
+                events.OnEnd = () =>
+                {
+                    registration?.Dispose();
+                    string next = _oneShot == state ? _afterCurrent : null;
+                    if (_oneShot == state) { _oneShot = null; _afterCurrent = null; }
+                    if (next != null && _map.ContainsKey(next)) Play(next);
+                    else _engine.Play(idle, AnimancerAnimationEngine.FADE_DURATION, idle.FadeMode);
+                };
+            }
         }
 
         private ClipTransition ResolveTransition(string kind)
