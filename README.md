@@ -25,5 +25,6 @@ Bridge currently references `CupkekGames.Character` which is not yet on the regi
 
 ## Changes
 
+- **0.6.1:** `Grounded` does nothing on a body that is not a humanoid (it has no feet to ground).
 - **0.6.0:** implements animations 0.5.0's `IsPlayingOneShot` and `PlayAfterCurrent`. `FootGrounding` is a switch (`OnEnable` runs the IK pass, `OnDisable` puts it back; no `RequireComponent(AnimancerComponent)`), exposed as `CharacterAnimationStateAnimancer.Grounded`.
 - **0.4.0:** shared kind lists: `AnimationKindSet` (with an optional base set) and `CharacterAnimationStateAnimancer.Set`; `AnimationKindEntry` is its own type (it was nested in the controller; serialized data is unchanged). Implements `Kinds` and `TryGetClip` from `com.cupkekgames.animations` 0.3.0.

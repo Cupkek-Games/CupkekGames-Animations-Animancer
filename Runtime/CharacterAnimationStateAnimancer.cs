@@ -50,7 +50,8 @@ namespace CupkekGames.Animations.Animancer
 
         /// <summary>
         /// Her feet stay on the floor (<see cref="FootGrounding"/>): on where she stands on it (a fight's field), off
-        /// where a pose hangs them on purpose (a bench).
+        /// where a pose hangs them on purpose (a bench). A body that is not a humanoid has no feet to ground: setting
+        /// it does nothing there.
         /// </summary>
         public bool Grounded
         {
@@ -59,6 +60,7 @@ namespace CupkekGames.Animations.Animancer
             {
                 FootGrounding feet = GetComponent<FootGrounding>();
                 if (feet == null && !value) return;
+                if (feet == null && !(TryGetComponent(out Animator animator) && animator.isHuman)) return;
                 if (feet == null) feet = gameObject.AddComponent<FootGrounding>();
                 feet.enabled = value;
             }
